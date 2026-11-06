@@ -1,0 +1,5 @@
+[
+ {"id":"ex1","type":"film","title":"Parasite","year":2019,"genres":["Thriller","Drame"],"status":"Déjà regardé","rating":9,"length":132,"platform":"Disney+","creator":"Bong Joon-ho","poster":"","description":"Exemple à supprimer : une famille modeste s’infiltre peu à peu chez une famille aisée.","addedAt":1}
+,{"id":"ex2","type":"serie","title":"Severance","year":2022,"genres":["Science-fiction","Thriller"],"status":"En cours","rating":null,"length":2,"platform":"Apple TV+","creator":"Dan Erickson","poster":"","description":"Exemple à supprimer : des employés dont les souvenirs sont scindés entre travail et vie privée.","addedAt":2}
+,{"id":"ex3","type":"film","title":"Dune : Deuxième partie","year":2024,"genres":["Science-fiction","Aventure"],"status":"À voir","rating":null,"length":166,"platform":"","creator":"Denis Villeneuve","poster":"","description":"Exemple à supprimer.","addedAt":3}
+]
