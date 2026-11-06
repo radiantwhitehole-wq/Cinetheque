@@ -57,6 +57,11 @@ dialog::backdrop{background:rgba(10,6,14,.7)}
 .set .f{padding:0;grid-template-columns:1fr}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:10px 18px;border-radius:10px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s}
 .toast.on{opacity:1}
+.imp{display:flex;gap:8px}.imp input{flex:1}
+.chips{align-items:center;color:var(--mu);font-size:.8rem}
+footer{max-width:1180px;margin:auto;padding:0 20px 40px;color:var(--mu);font-size:.8rem}
+.sug{display:grid;gap:6px}.sug button{display:flex;gap:10px;align-items:center;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:6px 10px;cursor:pointer}
+.sug button:hover{border-color:var(--ac)}.sug img{width:34px;height:50px;object-fit:cover;border-radius:4px}
 @media(max-width:520px){.f{grid-template-columns:1fr}h1{font-size:2rem}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -65,9 +70,13 @@ dialog::backdrop{background:rgba(10,6,14,.7)}
 <header><div class="bar"><div class="logo">Nos écrans à deux</div>
 <nav><a href="#films">Films</a><a href="#series">Séries</a><a href="#roulette">Roulette</a><a href="#historique">Historique</a><a href="#parametres">Paramètres</a></nav></div></header>
 <main id="app"></main>
+<footer>Fiches alimentées par l’API TMDB (ce site n’est ni approuvé ni certifié par TMDB). Disponibilités en streaming fournies par JustWatch.</footer>
 <dialog id="dlg"><form class="f" id="form" method="dialog"></form></dialog>
 <div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
+// À remplir : Supabase > Project Settings > API (valeurs publiques, sans danger grâce aux règles de sécurité)
+const SB_URL='https://VOTRE-PROJET.supabase.co',SB_KEY='VOTRE_CLE_ANON';
 const STATUS={'À voir':'#8ec5ff','Déjà regardé':'#8fe0b0','En cours':'#ffc98b','En pause':'#c4b0ff','Abandonné':'#ff9a9a'};
 const T={films:{t:'film',one:'film',many:'Films',len:'Durée (min)',cr:'Réalisateur'},series:{t:'serie',one:'série',many:'Séries',len:'Saisons',cr:'Créateur'}};
 let db=[],sha=null,route='films',f={q:'',st:'',g:''};
@@ -76,30 +85,23 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const enc=s=>btoa(unescape(encodeURIComponent(s))),dec=s=>decodeURIComponent(escape(atob(s)));
 const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('on'),2800)};
-const api=()=>`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/data/library.json`;
-const hdr=()=>({Authorization:'Bearer '+cfg.token,Accept:'application/vnd.github+json'});
-
+const sb=supabase.createClient(SB_URL,SB_KEY);
+let ready=false,user=null;
 async function load(){
-  try{
-    if(cfg.token){
-      const r=await fetch(api()+'?ref='+(cfg.branch||'main'),{headers:hdr()});
-      if(!r.ok)throw 0;const j=await r.json();sha=j.sha;db=JSON.parse(dec(j.content));
-    }else{
-      const r=await fetch('data/library.json?'+Date.now());db=await r.json();
-      if(localStorage.db)db=JSON.parse(localStorage.db);
-    }
-  }catch(e){db=JSON.parse(localStorage.db||'[]');toast('Chargement impossible : données locales affichées')}
+  const{data,error}=await sb.from('items').select('*').order('created_at',{ascending:false});
+  if(error)return toast('Chargement impossible : '+error.message);
+  db=data.map(x=>({...x,genres:x.genres||[]}));
 }
-async function save(){
-  localStorage.db=JSON.stringify(db);
-  if(!cfg.token)return toast('Enregistré sur cet appareil. Ajoute un jeton dans Paramètres pour partager.');
-  try{
-    const r=await fetch(api(),{method:'PUT',headers:hdr(),body:JSON.stringify({message:'Mise à jour de la liste',content:enc(JSON.stringify(db,null,1)),sha,branch:cfg.branch||'main'})});
-    if(!r.ok)throw r.status;sha=(await r.json()).content.sha;toast('Enregistré sur GitHub');
-  }catch(e){toast(e==409||e==422?'Conflit : recharge la page, puis réessaie':'Échec de l’enregistrement GitHub ('+e+')')}
+function refresh(){if(ready&&T[route])list($('#app'))}
+async function boot(){
+  if(SB_URL.includes('VOTRE'))return $('#app').innerHTML='<h1>Configuration</h1><p class="soon">Renseigne SB_URL et SB_KEY en haut du script de index.html.</p>';
+  const{data}=await sb.auth.getSession();
+  if(!data.session)return login();
+  user=data.session.user;ready=true;await load();go();
+  sb.channel('items').on('postgres_changes',{event:'*',schema:'public',table:'items'},()=>load().then(refresh)).subscribe();
 }
-
 function go(){
+  if(!ready)return login();
   route=(location.hash||'#films').slice(1);
   document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.hash==='#'+route));
   f={q:'',st:'',g:''};
@@ -117,11 +119,11 @@ function list(a){
   <select id="g" aria-label="Genre"><option value="">Tous les genres</option>${genres.map(g=>`<option>${esc(g)}</option>`).join('')}</select></div>
   <div class="grid" id="grid"></div>`;
   $('#q').oninput=e=>{f.q=e.target.value;cards()};$('#st').onchange=e=>{f.st=e.target.value;cards()};$('#g').onchange=e=>{f.g=e.target.value;cards()};
-  $('#add').onclick=()=>edit();cards();
+  $('#q').value=f.q;$('#st').value=f.st;$('#g').value=f.g;$('#add').onclick=()=>edit();cards();
 }
 function cards(){
   const c=T[route],all=db.filter(x=>x.type===c.t),q=f.q.trim().toLowerCase();
-  const r=all.filter(x=>(!q||x.title.toLowerCase().includes(q))&&(!f.st||x.status===f.st)&&(!f.g||x.genres.includes(f.g))).sort((a,b)=>b.addedAt-a.addedAt);
+  const r=all.filter(x=>(!q||x.title.toLowerCase().includes(q))&&(!f.st||x.status===f.st)&&(!f.g||x.genres.includes(f.g)));
   $('#cnt').textContent=`${r.length} ${r.length>1?c.many.toLowerCase():c.one} sur ${all.length}`;
   $('#grid').innerHTML=r.length?r.map(x=>{
     const h=[...x.title].reduce((s,ch)=>s+ch.charCodeAt(0),0)*37%360;
@@ -136,6 +138,7 @@ function edit(id){
   const all=[...new Set(db.flatMap(y=>y.genres))].sort((a,b)=>a.localeCompare(b,'fr'));
   const v=k=>esc(x[k]??'');
   $('#form').innerHTML=`<h2>${id?'Modifier':'Ajouter'} ${c.t==='film'?'un film':'une série'}</h2>
+  ${id?'':`<label class="w">Rechercher un titre ou coller un lien JustWatch<input id="imp" placeholder="Interstellar, ou https://www.justwatch.com/fr/film/interstellar" autocomplete="off"><span class="sug" id="sug"></span></label>`}
   <label class="w">Titre<input name="title" required value="${v('title')}"></label>
   <label>Année<input name="year" type="number" min="1888" max="2100" value="${v('year')}"></label>
   <label>${c.len}<input name="length" type="number" min="0" value="${v('length')}"></label>
@@ -152,25 +155,90 @@ function edit(id){
     const i=$('#gin'),l=i.value.split(',').map(s=>s.trim()).filter(Boolean);
     if(!l.includes(b.dataset.g))l.push(b.dataset.g);i.value=l.join(', ')});
   $('#cx').onclick=()=>$('#dlg').close();
-  if(id)$('#del').onclick=()=>{if(confirm('Supprimer « '+x.title+' » ?')){db=db.filter(y=>y.id!==id);$('#dlg').close();save();list($('#app'))}};
-  $('#form').onsubmit=e=>{
+  if(!id){$('#imp').oninput=()=>{clearTimeout(sT);sT=setTimeout(()=>runImport(false),350)};$('#imp').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();runImport(true)}}}
+  if(id)$('#del').onclick=async()=>{
+    if(!confirm('Supprimer « '+x.title+' » ?'))return;
+    const{error}=await sb.from('items').delete().eq('id',id);
+    if(error)return toast('Échec : '+error.message);
+    $('#dlg').close();await load();list($('#app'));toast('Supprimé');
+  };
+  $('#form').onsubmit=async e=>{
+    e.preventDefault();
     const d=new FormData(e.target),n=k=>d.get(k).trim();
-    const o={...x,id:id||'i'+Date.now().toString(36),type:c.t,title:n('title'),year:+n('year')||null,length:+n('length')||null,creator:n('creator'),platform:n('platform'),status:d.get('status'),
-      rating:n('rating')===''?null:+n('rating'),genres:[...new Set(n('genres').split(',').map(s=>s.trim()).filter(Boolean))],poster:n('poster'),description:n('description'),addedAt:x.addedAt||Date.now()};
-    db=id?db.map(y=>y.id===id?o:y):[...db,o];save();list($('#app'));
+    const o={...x,type:c.t,title:n('title'),year:+n('year')||null,length:+n('length')||null,creator:n('creator'),platform:n('platform'),status:d.get('status'),
+      rating:n('rating')===''?null:+n('rating'),genres:[...new Set(n('genres').split(',').map(s=>s.trim()).filter(Boolean))],poster:n('poster'),description:n('description'),tmdb_id:+e.target.dataset.tmdb||x.tmdb_id||null};
+    const{error}=await sb.from('items').upsert(o);
+    if(error)return toast('Échec : '+error.message);
+    $('#dlg').close();await load();list($('#app'));toast('Enregistré');
   };
   $('#dlg').showModal();
 }
+const TM='https://api.themoviedb.org/3',IMG='https://image.tmdb.org/t/p/w500';
+async function tm(path,params={}){
+  const{data,error}=await sb.functions.invoke('tmdb',{body:{path,params:{language:'fr-FR',...params}}});
+  if(error||!data||data.error)throw 'Recherche TMDB indisponible : vérifie la fonction « tmdb » dans Supabase';
+  return data;
+}
+function parseLink(s){
+  s=s.trim();
+  if(!s)throw 'Colle un lien JustWatch ou un titre';
+  const m=s.match(/justwatch\.com\/[a-z]{2}\/([^\/]+)\/([^\/?#]+)/i);
+  if(!m)return{q:s,y:null,tv:null};
+  const tv=/^(serie|series|tv-show|tv-shows|tv-series)$/i.test(m[1]);
+  let slug=decodeURIComponent(m[2]),y=null;
+  const ym=slug.match(/^(.+)-(\d{4})$/);if(ym){slug=ym[1];y=ym[2]}
+  return{q:slug.replace(/-/g,' '),y,tv};
+}
+async function impSearch(q,y,t){
+  const path=t==='film'?'/search/movie':'/search/tv';
+  let r=y?await tm(path,{query:q,[t==='film'?'year':'first_air_date_year']:y}):{results:[]};
+  if(!r.results.length)r=await tm(path,{query:q});
+  return r.results.slice(0,5);
+}
+async function impFill(id,t){
+  const d=await tm((t==='film'?'/movie/':'/tv/')+id,{append_to_response:t==='film'?'credits,watch/providers':'watch/providers'});
+  const fr=d['watch/providers']?.results?.FR;
+  const who=t==='film'?(d.credits?.crew||[]).filter(c=>c.job==='Director').map(c=>c.name):(d.created_by||[]).map(c=>c.name);
+  const set=(n,v)=>{$('#form').querySelector('[name="'+n+'"]').value=v??''};
+  $('#form').dataset.tmdb=id;
+  set('title',d.title||d.name);
+  set('year',(d.release_date||d.first_air_date||'').slice(0,4));
+  set('length',t==='film'?d.runtime:d.number_of_seasons);
+  set('creator',who.join(', '));
+  set('platform',(fr?.flatrate||[]).slice(0,3).map(p=>p.provider_name).join(', '));
+  set('genres',(d.genres||[]).map(g=>g.name).join(', '));
+  set('poster',d.poster_path?IMG+d.poster_path:'');
+  set('description',d.overview);
+}
+let sT;
+async function runImport(pick){
+  const c=T[route],v=$('#imp').value.trim(),n=runImport.n=(runImport.n||0)+1;
+  if(v.length<2){$('#sug').innerHTML='';return}
+  try{
+    const{q,y,tv}=parseLink(v);
+    if(tv!==null&&tv!==(c.t==='serie'))throw 'Ce lien est '+(tv?'une série':'un film')+' : utilise l’onglet '+(tv?'Séries':'Films');
+    const res=await impSearch(q,y,c.t);
+    if(n!==runImport.n)return;
+    const yr=r=>(r.release_date||r.first_air_date||'').slice(0,4)||'?';
+    $('#sug').innerHTML=res.length?res.map(r=>`<button type="button" data-id="${r.id}">${r.poster_path?`<img src="https://image.tmdb.org/t/p/w92${r.poster_path}" alt="">`:''}<span>${esc(r.title||r.name)} <span class="meta">(${yr(r)})</span></span></button>`).join(''):'<span class="meta">Aucun résultat</span>';
+    document.querySelectorAll('#sug button').forEach(b=>b.onclick=()=>impFill(b.dataset.id,c.t).then(()=>{$('#sug').innerHTML=''}).catch(e=>toast(String(e))));
+    if(res.length&&(pick||tv!==null))await impFill(res[0].id,c.t);
+  }catch(e){toast(typeof e==='string'?e:'Recherche impossible. Vérifie ta connexion.')}
+}
+function login(){
+  $('#app').innerHTML=`<h1>Connexion</h1><form class="f" id="lf" style="padding:0;max-width:380px;grid-template-columns:1fr;margin-top:20px"><label>E-mail<input name="email" type="email" required autocomplete="username"></label><label>Mot de passe<input name="password" type="password" required autocomplete="current-password"></label><div class="acts"><button class="btn">Se connecter</button></div></form>`;
+  $('#lf').onsubmit=async e=>{e.preventDefault();const d=new FormData(e.target);
+    const{error}=await sb.auth.signInWithPassword({email:d.get('email'),password:d.get('password')});
+    if(error)return toast('Connexion refusée : e-mail ou mot de passe incorrect');location.reload()};
+}
 function settings(a){
-  a.innerHTML=`<h1>Paramètres</h1><div class="set"><p>Pour que vous deux partagiez la même liste, renseignez le dépôt GitHub et un jeton d’accès. Ils restent uniquement dans ce navigateur.</p>
-  <form class="f" id="cf"><label>Compte ou organisation GitHub<input name="owner" value="${esc(cfg.owner)}"></label><label>Nom du dépôt<input name="repo" value="${esc(cfg.repo)}"></label>
-  <label>Branche<input name="branch" value="${esc(cfg.branch||'main')}"></label><label>Jeton d’accès (fine-grained, droit « Contents : Read and write »)<input name="token" type="password" value="${esc(cfg.token)}"></label>
-  <div class="acts" style="justify-content:flex-start"><button class="btn">Enregistrer</button><button type="button" class="btn ghost" id="ex">Exporter en JSON</button></div></form></div>`;
-  $('#cf').onsubmit=async e=>{e.preventDefault();cfg=Object.fromEntries(new FormData(e.target));localStorage.cfg=JSON.stringify(cfg);await load();toast('Paramètres enregistrés')};
+  a.innerHTML=`<h1>Paramètres</h1><div class="set"><p>Connecté en tant que <b>${esc(user.email)}</b>. Vos listes sont partagées et se mettent à jour en direct.</p>
+  <div class="acts" style="justify-content:flex-start"><button class="btn ghost" id="ex">Exporter en JSON</button><button class="btn ghost" id="lo">Se déconnecter</button></div></div>`;
   $('#ex').onclick=()=>{const l=document.createElement('a');l.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,1)],{type:'application/json'}));l.download='library.json';l.click()};
+  $('#lo').onclick=async()=>{await sb.auth.signOut();location.reload()};
 }
 addEventListener('hashchange',go);
-load().then(go);
+boot();
 </script>
 </body>
 </html>
