@@ -76,7 +76,7 @@ footer{max-width:1180px;margin:auto;padding:0 20px 40px;color:var(--mu);font-siz
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 // À remplir : Supabase > Project Settings > API (valeurs publiques, sans danger grâce aux règles de sécurité)
-const SB_URL='https://VOTRE-PROJET.supabase.co',SB_KEY='VOTRE_CLE_ANON';
+const SB_URL='https://ghzyyxyswhrrmgmbbqfj.supabase.co/functions/v1/tmdb',SB_KEY='d6efb7145ce036299f606c746b7728a5';
 const STATUS={'À voir':'#8ec5ff','Déjà regardé':'#8fe0b0','En cours':'#ffc98b','En pause':'#c4b0ff','Abandonné':'#ff9a9a'};
 const T={films:{t:'film',one:'film',many:'Films',len:'Durée (min)',cr:'Réalisateur'},series:{t:'serie',one:'série',many:'Séries',len:'Saisons',cr:'Créateur'}};
 let db=[],sha=null,route='films',f={q:'',st:'',g:''};
