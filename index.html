@@ -124,6 +124,14 @@ dialog{width:100vw;max-width:100vw;height:100%;max-height:100%;border-radius:0;b
 .tools.t4{grid-template-columns:repeat(4,1fr)}.tools.t5{grid-template-columns:1fr repeat(4,150px)}
 @media(max-width:1000px){.tools.t5{grid-template-columns:repeat(4,1fr)}.tools.t5 input{grid-column:1/-1}}
 @media(max-width:760px){.tools.t5,.tools.t4{grid-template-columns:1fr 1fr}.tools.t4>:last-child{grid-column:1/-1}}
+[hidden]{display:none!important}
+.card{position:relative}.card.picked{border-color:var(--ac);background:var(--s2)}
+.ck{position:absolute;top:10px;right:10px;width:24px;height:24px;border-radius:50%;border:2px solid var(--mu);background:var(--bg)}
+.ck.on{background:var(--ac);border-color:var(--ac)}.ck.on::after{content:'✓';display:block;text-align:center;line-height:20px;font-weight:800;font-size:.85rem;color:#2a1220}
+.sbar{display:flex;gap:8px;justify-content:center;margin-top:14px}.sbar .btn{padding:8px 16px}
+.bulk{position:fixed;left:50%;transform:translateX(-50%);bottom:20px;z-index:7;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;background:var(--s2);border:1px solid var(--ac);border-radius:16px;padding:10px 14px;width:max-content;max-width:94vw;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.bulk select{background:var(--s);border:1px solid var(--line);border-radius:12px;padding:9px 12px}.bulk .btn{padding:9px 14px}
+@media(max-width:760px){.bulk{bottom:80px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -197,7 +205,7 @@ function whoAmI(){
 }
 function go(){
   if(!ready)return login();
-  route=(location.hash||'#nous').slice(1);f={q:'',n:'',st:'',g:'',s:'add'};
+  route=(location.hash||'#nous').slice(1);f={q:'',n:'',st:'',g:'',s:'add'};sel=null;
   document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.hash==='#'+route));
   const a=$('#app');
   if(LISTS.includes(route))return list(a);
@@ -209,6 +217,7 @@ function go(){
   location.hash='#nous';
 }
 
+let sel=null,shown=[];
 const stRow=(x,n)=>sts.find(s=>s.item_id===x.id&&s.user_id===PID[n]);
 const common=x=>{const a=stRow(x,'Lu'),b=stRow(x,'Gab');return !!(a&&b&&a.status===b.status)};
 const nature=x=>x.genres.includes('Animation')?'Dessin animé':x.genres.includes('Documentaire')?'Documentaire':x.type==='film'?'Film':'Série';
@@ -227,29 +236,55 @@ const S={add:['Ajoutés récemment',(a,b)=>b.created_at.localeCompare(a.created_
   len:['Plus longs',(a,b)=>(b.length||0)-(a.length||0)],seen:['Vus récemment',(a,b)=>(b.watched_at||'').localeCompare(a.watched_at||'')]};
 function list(a){
   const all=scope(route,true),genres=[...new Set(all.flatMap(x=>x.genres))].sort((x,y)=>x.localeCompare(y,'fr'));
-  a.innerHTML=`<div class="ph"><h1>${route==='nous'?'Nous':PERS[route]}</h1><p id="cnt"></p></div>
+  a.innerHTML=`<div class="ph"><h1>${route==='nous'?'Nous':PERS[route]}</h1><p id="cnt"></p><div class="sbar"><button class="btn ghost" id="sb"></button><button class="btn ghost" id="sa" hidden>Tout sélectionner</button></div></div>
   <div class="tools t5"><input id="q" type="search" placeholder="Rechercher dans la liste" aria-label="Rechercher un titre">
   <select id="fn" aria-label="Nature"><option value="">Toutes les natures</option>${['Film','Série','Dessin animé','Documentaire'].map(n=>`<option>${n}</option>`).join('')}</select>
   <select id="fs" aria-label="État"><option value="">Tous les états</option>${Object.keys(STATUS).map(s=>`<option>${s}</option>`).join('')}</select>
   <select id="fg" aria-label="Genre"><option value="">Tous les genres</option>${genres.map(g=>`<option>${esc(g)}</option>`).join('')}</select>
   <select id="fo" aria-label="Trier par">${Object.entries(S).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join('')}</select></div>
-  <div class="lgrid" id="grid"></div>`;
+  <div class="lgrid" id="grid"></div><div class="bulk" id="bulk" hidden></div>`;
   [['q','q'],['fn','n'],['fs','st'],['fg','g'],['fo','s']].forEach(([id,k])=>{const e=$('#'+id);e.value=f[k];e.oninput=e.onchange=()=>{f[k]=e.value;cards()}});
   cards();
+  $('#sb').onclick=()=>{sel=sel?null:new Set();cards();bulkBar()};$('#sa').onclick=()=>{shown.forEach(i=>sel.add(i));cards();bulkBar()};bulkBar();
 }
 function cards(){
   const q=f.q.trim().toLowerCase(),all=scope(route,true);
   const r=all.filter(x=>(!q||x.title.toLowerCase().includes(q))&&(!f.n||nature(x)===f.n)&&(!f.st||x.status===f.st)&&(!f.g||x.genres.includes(f.g))).sort(S[f.s][1]);
-  $('#cnt').textContent=`${r.length} sur ${all.length}`;
+  $('#cnt').textContent=`${r.length} sur ${all.length}`;shown=r.map(x=>x.id);
   $('#grid').innerHTML=r.length?r.map(x=>{const a=sc(x,route);
-    return `<article class="card" data-id="${x.id}" tabindex="0" role="button"><div>${poster(x)}</div><div class="body">
+    return `<article class="card${sel&&sel.has(x.id)?' picked':''}" data-id="${x.id}" tabindex="0" role="button">${sel?`<span class="ck${sel.has(x.id)?' on':''}"></span>`:''}<div>${poster(x)}</div><div class="body">
     <div class="top"><h3>${esc(x.title)}</h3><div class="avg">${a==null?'–':`${fmt(a)}<small>/10</small>`}</div></div>
     <div class="meta">${metaLine(x)}</div><div class="gs">${x.genres.slice(0,3).map(g=>`<span class="g">${esc(g)}</span>`).join('')}</div>
     <p class="desc">${esc(x.description)}</p><div class="foot"><span class="tag" style="color:${STATUS[x.status]}">${x.status}</span> <span class="g">${nature(x)}</span></div></div></article>`}).join('')
     :`<div class="empty">${all.length?'Aucun résultat avec ces filtres.':'Rien ici pour l’instant. Utilisez l’onglet Recherche pour ajouter un titre.'}</div>`;
-  document.querySelectorAll('.card').forEach(c=>{const o=()=>{const x=db.find(y=>y.id===c.dataset.id);fiche(x,x)};c.onclick=o;c.onkeydown=e=>{if(e.key==='Enter')o()}});
+  document.querySelectorAll('.card').forEach(c=>{const id=c.dataset.id,o=()=>{if(sel){sel.has(id)?sel.delete(id):sel.add(id);cards();bulkBar();return}const x=db.find(y=>y.id===id);fiche(x,x)};c.onclick=o;c.onkeydown=e=>{if(e.key==='Enter')o()}});
 }
 
+const today=()=>new Date().toISOString().slice(0,10);
+function bulkBar(){
+  const b=$('#bulk'),mine=route==='nous'||PERS[route]===me;
+  $('#sb').hidden=!mine;$('#sb').textContent=sel?'Terminer la sélection':'Sélectionner';$('#sa').hidden=!sel;
+  if(!sel||!mine){b.hidden=true;return}
+  b.hidden=false;
+  b.innerHTML=`<b>${sel.size} sélectionné${sel.size>1?'s':''}</b><select id="bs" aria-label="Changer l’état"><option value="">Changer l’état…</option>${Object.keys(STATUS).map(s=>`<option>${s}</option>`).join('')}</select>`+
+    (route==='nous'?['Lu','Gab'].map(n=>`<button class="btn ghost" data-a="${n}">Garder chez ${n}</button>`).join(''):'<button class="btn ghost" data-a="nous">Vers Nous</button>')+'<button class="btn del" data-a="del">Supprimer</button>';
+  $('#bs').onchange=e=>e.target.value&&bulk('state',e.target.value);
+  b.querySelectorAll('[data-a]').forEach(x=>x.onclick=()=>bulk(x.dataset.a));
+}
+async function bulk(act,v){
+  if(!sel||!sel.size)return toast('Sélectionnez d’abord des titres');
+  const ids=[...sel],items=ids.map(i=>db.find(x=>x.id===i)).filter(Boolean),nous=route==='nous',n=ids.length,both=['Lu','Gab'];
+  if(act==='del'&&!confirm(`Supprimer ${n} titre${n>1?'s':''} ${nous?'de la liste commune':'de votre liste'} ?`))return;
+  if(act==='nous'&&!confirm(`Passer ${n} titre${n>1?'s':''} dans Nous ? Votre état sera appliqué aux deux.`))return;
+  const up=rows=>sb.from('statuses').upsert(rows,{onConflict:'item_id,user_id'});let r;
+  if(act==='del')r=await sb.from('statuses').delete().in('item_id',ids).in('user_id',(nous?both:[me]).map(k=>PID[k]));
+  else if(act==='Lu'||act==='Gab')r=await sb.from('statuses').delete().in('item_id',ids).eq('user_id',PID[act==='Lu'?'Gab':'Lu']);
+  else if(act==='nous')r=await up(items.flatMap(i=>{const s=stRow(i,me);return both.map(k=>({item_id:i.id,user_id:PID[k],status:s.status,watched_at:s.watched_at}))}));
+  else r=await up(items.flatMap(i=>(nous?both:[me]).map(k=>({item_id:i.id,user_id:PID[k],status:v,watched_at:v==='Déjà regardé'?((stRow(i,me)||{}).watched_at||today()):null}))));
+  if(r.error)return toast('Échec : '+r.error.message);
+  if(act==='del'){const{data}=await sb.from('statuses').select('item_id').in('item_id',ids),k=new Set(data.map(x=>x.item_id)),o=ids.filter(i=>!k.has(i));if(o.length)await sb.from('items').delete().in('id',o)}
+  sel=new Set();await load();refresh();toast('C’est fait');
+}
 function fiche(o,lib){
   const x=lib||o,d=$('#dlg'),rr=lib?rs(lib.id):[],mn=rr.find(r=>r.user_id===user.id),others=rr.filter(r=>r.user_id!==user.id);
   const oth=me==='Lu'?'Gab':'Lu',com=!!lib&&common(lib),mr=lib&&stRow(lib,me),or=lib&&stRow(lib,oth);
