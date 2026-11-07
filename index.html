@@ -190,6 +190,18 @@ dialog{height:100dvh;max-height:100dvh;margin:0;overscroll-behavior:contain}
 .fi{padding:calc(20px + env(safe-area-inset-top)) 16px calc(30px + env(safe-area-inset-bottom))}
 .fclose{display:block;width:100%}
 }
+.rhead{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin:6px 0 14px;padding-top:22px;border-top:1px solid var(--line)}
+.rhead h3{font-size:1.3rem}.rhead small{color:var(--mu)}
+.pill{display:flex;align-items:center;gap:6px;background:var(--s);border:1px solid var(--line);border-radius:99px;padding:4px 6px 4px 12px;color:var(--mu);font-size:.8rem;min-width:0;max-width:58%}
+.pill select{appearance:none;-webkit-appearance:none;border:0;background:none;color:var(--tx);font:inherit;font-weight:500;padding:4px 18px 4px 4px;min-width:0;max-width:200px;text-overflow:ellipsis;cursor:pointer;background-image:linear-gradient(45deg,transparent 50%,var(--mu) 50%),linear-gradient(135deg,var(--mu) 50%,transparent 50%);background-size:5px 5px;background-position:calc(100% - 9px) 55%,calc(100% - 4px) 55%;background-repeat:no-repeat}
+.pill select option{color:#222}
+.rail{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x proximity;margin:0 -20px;padding:0 20px 10px;scrollbar-width:none}
+.rail::-webkit-scrollbar{display:none}
+.rail .pc{flex:0 0 138px;scroll-snap-align:start}
+.rail .empty{flex:1}
+.pill span{white-space:nowrap}.rhead>div:first-child{min-width:0}.rhead small{display:block;line-height:1.3}
+.pill{flex:none}
+@media(max-width:760px){.pill select{max-width:120px}.rail{margin:0 -14px;padding:0 14px 10px}.rail .pc{flex-basis:124px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -410,9 +422,9 @@ function reco(){
   const box=$('#reco');if(!box)return;
   const liked=db.filter(x=>x.tmdb_id&&avg(x.id)!=null&&avg(x.id)>=7).sort((a,b)=>avg(b.id)-avg(a.id)),sel=recoSeed||'mix';recoSeed='';
   const opts=[...liked],si=db.find(x=>x.id===sel&&x.tmdb_id);if(si&&!opts.includes(si))opts.unshift(si);
-  const head='<h3 class="mh" style="text-align:center">Recommandations</h3>';
-  if(!opts.length){box.innerHTML=head+'<div class="empty">Notez quelques titres 7/10 ou plus (en moyenne) pour recevoir des recommandations.</div>';return}
-  box.innerHTML=head+`<div class="tools t1"><select id="rs" aria-label="Basé sur"><option value="mix">Un mélange de vos coups de cœur</option>${opts.map(x=>`<option value="${x.id}">Comme ${esc(x.title)}${avg(x.id)!=null?' ('+fmt(avg(x.id))+'/10)':''}</option>`).join('')}</select></div><div class="pgrid" id="rg2"><div class="empty">Recherche…</div></div>`;
+  const head='<div class="rhead"><div><h3>Pour vous</h3><small>Proche de vos coups de cœur</small></div>';
+  if(!opts.length){box.innerHTML=head+'</div><div class="empty">Notez quelques titres 7/10 ou plus (en moyenne) pour recevoir des recommandations.</div>';return}
+  box.innerHTML=head+`<label class="pill"><span>Basé sur</span><select id="rs" aria-label="Basé sur"><option value="mix">Mes coups de cœur</option>${opts.map(x=>`<option value="${x.id}">${esc(x.title)}${avg(x.id)!=null?' · '+fmt(avg(x.id)):''}</option>`).join('')}</select></label></div><div class="rail" id="rg2"><span class="meta">Recherche…</span></div>`;
   const run=async()=>{
     const v=$('#rs').value,n=++recoN,seeds=v==='mix'?liked.slice(0,6).sort(()=>Math.random()-.5).slice(0,3):[db.find(x=>x.id===v)];
     try{
