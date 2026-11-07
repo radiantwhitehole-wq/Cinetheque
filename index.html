@@ -89,8 +89,8 @@ footer{max-width:1180px;margin:auto;padding:0 20px 30px;color:var(--mu);font-siz
 @media(max-width:760px){
 header{grid-template-columns:1fr;justify-items:center;height:58px}
 header>div:last-child{display:none}
-nav{position:fixed;bottom:0;left:0;right:0;z-index:6;background:rgba(27,20,35,.97);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(7,1fr);gap:0;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
-nav a{flex-direction:column;gap:2px;padding:6px 0;border-radius:10px;font-size:.62rem;justify-content:center}
+nav{position:fixed;bottom:0;left:0;right:0;z-index:6;background:rgba(27,20,35,.97);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(8,1fr);gap:0;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+nav a{flex-direction:column;gap:2px;padding:6px 0;border-radius:10px;font-size:.56rem;justify-content:center;min-width:0}
 nav a span,nav a.on span{display:inline}
 nav a.on{box-shadow:none}
 main{padding:24px 14px 100px}
@@ -120,11 +120,15 @@ dialog{width:100vw;max-width:100vw;height:100%;max-height:100%;border-radius:0;b
 .rb{min-width:0}.rb b{display:block;line-height:1.25}
 .v{color:var(--gd);font:800 1.1rem 'Bricolage Grotesque';text-align:right}
 @media(max-width:760px){.tools.t3,.tools.t2{grid-template-columns:1fr 1fr}.tools.t3>:last-child{grid-column:1/-1}.res{grid-template-columns:96px 1fr}.rw{grid-template-columns:40px 46px 1fr auto;gap:10px;padding:8px 10px}}
+.tools.t1{grid-template-columns:minmax(0,260px);justify-content:center}
+.tools.t4{grid-template-columns:repeat(4,1fr)}.tools.t5{grid-template-columns:1fr repeat(4,150px)}
+@media(max-width:1000px){.tools.t5{grid-template-columns:repeat(4,1fr)}.tools.t5 input{grid-column:1/-1}}
+@media(max-width:760px){.tools.t5,.tools.t4{grid-template-columns:1fr 1fr}.tools.t4>:last-child{grid-column:1/-1}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-<header><div class="logo"><span class="mark" id="mk"></span>Cinéthèque</div><nav id="nav"></nav><div></div></header>
+<header><a class="logo" href="#nous" style="color:inherit;text-decoration:none"><span class="mark" id="mk"></span>Cinéthèque</a><nav id="nav"></nav><div></div></header>
 <main id="app"></main>
 <footer>Fiches alimentées par l’API TMDB (ce site n’est ni approuvé ni certifié par TMDB). Disponibilités en streaming fournies par JustWatch.</footer>
 <dialog id="dlg"></dialog>
@@ -135,11 +139,11 @@ dialog{width:100vw;max-width:100vw;height:100%;max-height:100%;border-radius:0;b
 const SB_URL='https://ghzyyxyswhrrmgmbbqfj.supabase.co',SB_KEY='sb_publishable_hK_ZE_hGjwPj9Ob-8sAQEw_j94FOuJ_';
 const STATUS={'À voir':'#8ec5ff','Déjà regardé':'#8fe0b0','En cours':'#ffc98b','En pause':'#c4b0ff','Abandonné':'#ff9a9a'};
 const IMG='https://image.tmdb.org/t/p/w500';
-const P={film:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/>',tv:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 2l4 5 4-5"/>',search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-5-5"/>',wheel:'<circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M6 6l12 12M18 6L6 18"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',cup:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/>',gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>'};
+const P={film:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/>',tv:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 2l4 5 4-5"/>',search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-5-5"/>',wheel:'<circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M6 6l12 12M18 6L6 18"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',cup:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/>',user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',heart:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2 4 4 0 0 1 7 2c0 5.5-7 10-7 10z"/>',gear:'<circle cx="12" cy="12" r="3"/><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>'};
 const ic=k=>`<svg class="i" viewBox="0 0 24 24">${P[k]}</svg>`;
-const NAV=[['films','Films','film'],['series','Séries','tv'],['recherche','Recherche','search'],['roulette','Roulette','wheel'],['historique','Historique','clock'],['classement','Classement','cup'],['parametres','Réglages','gear']];
-const T={films:'film',series:'serie'},NAME={films:'Films',series:'Séries'};
-let db=[],rat=[],route='films',f={q:'',st:'',g:''},ready=false,user=null;
+const NAV=[['recherche','Recherche','search'],['nous','Nous','heart'],['lu','Lu','user'],['gab','Gab','user'],['roulette','Roulette','wheel'],['historique','Historique','clock'],['classement','Classement','cup'],['parametres','Réglages','gear']];
+const PERS={lu:'Lu',gab:'Gab'},LISTS=['nous','lu','gab'];
+let db=[],rat=[],sts=[],prof=[],route='nous',f={q:'',n:'',st:'',g:'',s:'add'},ready=false,user=null,me='',PID={};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('on'),3000)};
@@ -171,85 +175,123 @@ async function details(id,t){
 }
 
 async function load(){
-  const[a,b]=await Promise.all([sb.from('items').select('*').order('created_at',{ascending:false}),sb.from('ratings').select('*')]);
-  if(a.error||b.error)return toast('Chargement impossible : '+(a.error||b.error).message);
-  db=a.data.map(x=>({...x,genres:x.genres||[]}));rat=b.data;
+  const q=t=>sb.from(t).select('*'),[a,b,c,d]=await Promise.all([sb.from('items').select('*').order('created_at',{ascending:false}),q('ratings'),q('statuses'),q('profiles')]);
+  const e=a.error||b.error||c.error||d.error;if(e)return toast('Chargement impossible : '+e.message);
+  db=a.data.map(x=>({...x,genres:x.genres||[]}));rat=b.data;sts=c.data;prof=d.data;PID={};prof.forEach(p=>PID[p.name]=p.user_id);
+  me=(prof.find(p=>p.user_id===user.id)||{}).name||'';
 }
-function refresh(){if(!ready)return;const a=$('#app');if(T[route])list(a);else if(route==='historique')histPage(a);else if(route==='classement')rankPage(a)}
+function refresh(){if(!ready)return;const a=$('#app');if(LISTS.includes(route))list(a);else if(route==='historique')histPage(a);else if(route==='classement')rankPage(a)}
 async function boot(){
   if(SB_URL.includes('VOTRE'))return $('#app').innerHTML='<div class="soon"><h1>Configuration</h1><p>Renseignez SB_URL et SB_KEY en haut du script de index.html.</p></div>';
   const{data}=await sb.auth.getSession();
   if(!data.session)return login();
-  user=data.session.user;ready=true;await load();go();
-  sb.channel('live').on('postgres_changes',{event:'*',schema:'public',table:'items'},()=>load().then(refresh)).on('postgres_changes',{event:'*',schema:'public',table:'ratings'},()=>load().then(refresh)).subscribe();
+  user=data.session.user;await load();
+  if(!me)return whoAmI();
+  ready=true;go();
+  const ch=sb.channel('live'),on=t=>ch.on('postgres_changes',{event:'*',schema:'public',table:t},()=>load().then(refresh));
+  ['items','ratings','statuses','profiles'].forEach(on);ch.subscribe();
+}
+function whoAmI(){
+  $('#app').innerHTML=`<div class="ph"><h1>Qui êtes-vous ?</h1><p>Choisissez votre prénom pour retrouver votre liste.</p></div><div class="tools t2">${['Lu','Gab'].map(n=>`<button class="btn" data-n="${n}"${PID[n]?' disabled':''}>${n}</button>`).join('')}</div>`;
+  document.querySelectorAll('[data-n]').forEach(b=>b.onclick=async()=>{const{error}=await sb.from('profiles').insert({user_id:user.id,name:b.dataset.n});if(error)return toast('Échec : '+error.message);location.reload()});
 }
 function go(){
   if(!ready)return login();
-  route=(location.hash||'#films').slice(1);f={q:'',st:'',g:''};
+  route=(location.hash||'#nous').slice(1);f={q:'',n:'',st:'',g:'',s:'add'};
   document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.hash==='#'+route));
   const a=$('#app');
-  if(T[route])return list(a);
+  if(LISTS.includes(route))return list(a);
   if(route==='recherche')return searchPage(a);
   if(route==='parametres')return settings(a);
   if(route==='roulette')return roulette(a);
   if(route==='historique')return histPage(a);
   if(route==='classement')return rankPage(a);
-  location.hash='#films';
+  location.hash='#nous';
 }
 
+const stRow=(x,n)=>sts.find(s=>s.item_id===x.id&&s.user_id===PID[n]);
+const common=x=>{const a=stRow(x,'Lu'),b=stRow(x,'Gab');return !!(a&&b&&a.status===b.status)};
+const nature=x=>x.genres.includes('Animation')?'Dessin animé':x.genres.includes('Documentaire')?'Documentaire':x.type==='film'?'Film':'Série';
+const myScore=(x,n)=>{const r=rat.find(r=>r.item_id===x.id&&r.user_id===PID[n]);return r?+r.score:null};
+const sc=(x,w)=>w==='nous'?avg(x.id):myScore(x,PERS[w]);
+function scope(w,excl){
+  const out=[];
+  db.forEach(x=>{
+    if(w==='nous'){if(common(x)){const l=stRow(x,'Lu'),g=stRow(x,'Gab');out.push({...x,status:l.status,watched_at:l.watched_at||g.watched_at})}}
+    else if(!(excl&&common(x))){const s=stRow(x,PERS[w]);if(s)out.push({...x,status:s.status,watched_at:s.watched_at})}
+  });
+  return out;
+}
+const S={add:['Ajoutés récemment',(a,b)=>b.created_at.localeCompare(a.created_at)],az:['Titre (A–Z)',(a,b)=>a.title.localeCompare(b.title,'fr')],
+  note:['Mieux notés',(a,b)=>(sc(b,route)??-1)-(sc(a,route)??-1)],year:['Plus récents',(a,b)=>(b.year||0)-(a.year||0)],
+  len:['Plus longs',(a,b)=>(b.length||0)-(a.length||0)],seen:['Vus récemment',(a,b)=>(b.watched_at||'').localeCompare(a.watched_at||'')]};
 function list(a){
-  const t=T[route],genres=[...new Set(db.filter(x=>x.type===t).flatMap(x=>x.genres))].sort((x,y)=>x.localeCompare(y,'fr'));
-  a.innerHTML=`<div class="ph"><h1>${NAME[route]}</h1><p id="cnt"></p></div>
-  <div class="tools"><input id="q" type="search" placeholder="Rechercher dans la bibliothèque" aria-label="Rechercher un titre">
-  <select id="st" aria-label="Statut"><option value="">Tous les statuts</option>${Object.keys(STATUS).map(s=>`<option>${s}</option>`).join('')}</select>
-  <select id="g" aria-label="Genre"><option value="">Tous les genres</option>${genres.map(g=>`<option>${esc(g)}</option>`).join('')}</select></div>
+  const all=scope(route,true),genres=[...new Set(all.flatMap(x=>x.genres))].sort((x,y)=>x.localeCompare(y,'fr'));
+  a.innerHTML=`<div class="ph"><h1>${route==='nous'?'Nous':PERS[route]}</h1><p id="cnt"></p></div>
+  <div class="tools t5"><input id="q" type="search" placeholder="Rechercher dans la liste" aria-label="Rechercher un titre">
+  <select id="fn" aria-label="Nature"><option value="">Toutes les natures</option>${['Film','Série','Dessin animé','Documentaire'].map(n=>`<option>${n}</option>`).join('')}</select>
+  <select id="fs" aria-label="État"><option value="">Tous les états</option>${Object.keys(STATUS).map(s=>`<option>${s}</option>`).join('')}</select>
+  <select id="fg" aria-label="Genre"><option value="">Tous les genres</option>${genres.map(g=>`<option>${esc(g)}</option>`).join('')}</select>
+  <select id="fo" aria-label="Trier par">${Object.entries(S).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join('')}</select></div>
   <div class="lgrid" id="grid"></div>`;
-  $('#q').oninput=e=>{f.q=e.target.value;cards()};$('#st').onchange=e=>{f.st=e.target.value;cards()};$('#g').onchange=e=>{f.g=e.target.value;cards()};
-  $('#q').value=f.q;$('#st').value=f.st;$('#g').value=f.g;cards();
+  [['q','q'],['fn','n'],['fs','st'],['fg','g'],['fo','s']].forEach(([id,k])=>{const e=$('#'+id);e.value=f[k];e.oninput=e.onchange=()=>{f[k]=e.value;cards()}});
+  cards();
 }
 function cards(){
-  const t=T[route],all=db.filter(x=>x.type===t),q=f.q.trim().toLowerCase();
-  const r=all.filter(x=>(!q||x.title.toLowerCase().includes(q))&&(!f.st||x.status===f.st)&&(!f.g||x.genres.includes(f.g)));
-  $('#cnt').textContent=`${r.length} sur ${all.length} dans la bibliothèque`;
-  $('#grid').innerHTML=r.length?r.map(x=>{const a=avg(x.id);
+  const q=f.q.trim().toLowerCase(),all=scope(route,true);
+  const r=all.filter(x=>(!q||x.title.toLowerCase().includes(q))&&(!f.n||nature(x)===f.n)&&(!f.st||x.status===f.st)&&(!f.g||x.genres.includes(f.g))).sort(S[f.s][1]);
+  $('#cnt').textContent=`${r.length} sur ${all.length}`;
+  $('#grid').innerHTML=r.length?r.map(x=>{const a=sc(x,route);
     return `<article class="card" data-id="${x.id}" tabindex="0" role="button"><div>${poster(x)}</div><div class="body">
     <div class="top"><h3>${esc(x.title)}</h3><div class="avg">${a==null?'–':`${fmt(a)}<small>/10</small>`}</div></div>
     <div class="meta">${metaLine(x)}</div><div class="gs">${x.genres.slice(0,3).map(g=>`<span class="g">${esc(g)}</span>`).join('')}</div>
-    <p class="desc">${esc(x.description)}</p><div class="foot"><span class="tag" style="color:${STATUS[x.status]}">${x.status}</span></div></div></article>`}).join('')
-    :`<div class="empty">${all.length?'Aucun résultat avec ces filtres.':'Rien ici pour l’instant. Utilisez l’onglet Recherche pour ajouter votre premier titre.'}</div>`;
+    <p class="desc">${esc(x.description)}</p><div class="foot"><span class="tag" style="color:${STATUS[x.status]}">${x.status}</span> <span class="g">${nature(x)}</span></div></div></article>`}).join('')
+    :`<div class="empty">${all.length?'Aucun résultat avec ces filtres.':'Rien ici pour l’instant. Utilisez l’onglet Recherche pour ajouter un titre.'}</div>`;
   document.querySelectorAll('.card').forEach(c=>{const o=()=>{const x=db.find(y=>y.id===c.dataset.id);fiche(x,x)};c.onclick=o;c.onkeydown=e=>{if(e.key==='Enter')o()}});
 }
 
 function fiche(o,lib){
-  const x=lib||o,d=$('#dlg'),rr=lib?rs(lib.id):[],mine=rr.find(r=>r.user_id===user.id),others=rr.filter(r=>r.user_id!==user.id);
-  const sel=cur=>`<select id="st">${Object.keys(STATUS).map(s=>`<option${s===cur?' selected':''}>${s}</option>`).join('')}</select>`;
+  const x=lib||o,d=$('#dlg'),rr=lib?rs(lib.id):[],mn=rr.find(r=>r.user_id===user.id),others=rr.filter(r=>r.user_id!==user.id);
+  const oth=me==='Lu'?'Gab':'Lu',com=!!lib&&common(lib),mr=lib&&stRow(lib,me),or=lib&&stRow(lib,oth);
+  const nm=u=>Object.keys(PID).find(k=>PID[k]===u)||'?',dt=()=>new Date().toISOString().slice(0,10);
+  const opts=c=>Object.keys(STATUS).map(s=>`<option${s===c?' selected':''}>${s}</option>`).join('');
+  const dr=r=>`<div class="row"><label for="wd">Vu le</label><input type="date" id="wd" value="${(r&&r.watched_at)||''}"></div>`;
   d.innerHTML=`<div class="fi"><button class="x" id="cl" aria-label="Fermer">×</button>
-  <div class="fh">${poster(x)}<div class="fm"><h2>${esc(x.title)}</h2><div class="meta">${metaLine(x)}</div><div class="gs">${x.genres.map(g=>`<span class="g">${esc(g)}</span>`).join('')}</div>
+  <div class="fh">${poster(x)}<div class="fm"><h2>${esc(x.title)}</h2><div class="meta">${nature(x)} · ${metaLine(x)}</div><div class="gs">${x.genres.map(g=>`<span class="g">${esc(g)}</span>`).join('')}</div>
   ${lib?`<div class="avgbig"><b>${fmt(avg(lib.id))}</b><small>/10 · moyenne à deux</small></div>`:''}</div></div>
   <p class="ov">${esc(x.description||'Pas de description disponible.')}</p>
   <div class="facts"><div><small>${x.type==='film'?'Réalisateur':'Créateur'}</small><b>${esc(x.creator||'–')}</b></div><div><small>Disponible sur</small><b>${esc(x.platform||'–')}</b></div></div>
-  ${lib?`<div class="box"><div class="row"><label for="st">Statut</label>${sel(lib.status)}</div><div class="row"><label for="wd">Vu le</label><input type="date" id="wd" value="${lib.watched_at||''}"></div></div>
-  <div class="box"><h4>Notes</h4>${others.map(r=>`<div class="row"><span>${esc(nm(r.email))}</span><b class="sc">${fmt(r.score)}</b></div>`).join('')}
-  <div class="row"><span>Ta note</span><b class="sc">${mine?fmt(mine.score):'–'}</b></div>
-  <div class="scale">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button type="button" data-n="${n}" class="${mine&&+mine.score===n?'on':''}">${n}</button>`).join('')}</div></div>
-  <div class="acts"><button class="btn del" id="rm">Retirer de la bibliothèque</button></div>`
-  :`<div class="box"><div class="row"><label for="st">Statut</label>${sel('À voir')}</div><button class="btn" id="ad">Ajouter à la bibliothèque</button></div>`}</div>`;
+  ${lib?`<div class="box">${com?`<div class="row"><label for="dst">Statut à deux</label><select id="dst">${opts(mr.status)}</select></div>${dr(mr)}`
+    :`<div class="row"><label for="dst">Mon statut (${me})</label><select id="dst"><option value="">Pas dans ma liste</option>${opts(mr&&mr.status)}</select></div>${or?`<div class="row"><span>Statut de ${oth}</span><b>${or.status}</b></div>`:''}${mr&&mr.status==='Déjà regardé'?dr(mr):''}`}</div>
+  <div class="box"><h4>Notes</h4>${others.map(r=>`<div class="row"><span>${esc(nm(r.user_id))}</span><b class="sc">${fmt(r.score)}</b></div>`).join('')}
+  <div class="row"><span>Ta note</span><b class="sc">${mn?fmt(mn.score):'–'}</b></div>
+  <div class="scale">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button type="button" data-n="${n}" class="${mn&&+mn.score===n?'on':''}">${n}</button>`).join('')}</div></div>
+  ${com?'<div class="acts"><button class="btn del" id="rm">Retirer de la liste commune</button></div>':''}`
+  :`<div class="box"><div class="row"><label for="dd">Ajouter à</label><select id="dd"><option value="nous">Notre liste (Nous)</option><option value="me">Ma liste (${me})</option></select></div>
+  <div class="row"><label for="dst">Statut</label><select id="dst">${opts('À voir')}</select></div><button class="btn" id="ad">Ajouter</button></div>`}</div>`;
   $('#cl').onclick=()=>d.close();d.onclick=e=>{if(e.target===d)d.close()};
-  const again=async()=>{await load();const n=db.find(i=>i.id===lib.id);fiche(n,n);refresh()};
-  const upd=async p=>{const{error}=await sb.from('items').update(p).eq('id',lib.id);if(error)return toast('Échec : '+error.message);again()};
+  const again=async()=>{await load();const n=lib&&db.find(i=>i.id===lib.id);if(n)fiche(n,n);else d.close();refresh()};
   if(lib){
-    $('#st').onchange=e=>{const s=e.target.value,p={status:s};if(s==='Déjà regardé'&&!lib.watched_at)p.watched_at=new Date().toISOString().slice(0,10);upd(p)};
-    $('#wd').onchange=e=>upd({watched_at:e.target.value||null});
+    const names=com?['Lu','Gab']:[me],cur=mr&&mr.watched_at;
+    const put=async(v,w)=>{const{error}=await sb.from('statuses').upsert(names.map(n=>({item_id:lib.id,user_id:PID[n],status:v,watched_at:w})),{onConflict:'item_id,user_id'});if(error)return toast('Échec : '+error.message);again()};
+    const clean=async()=>{const{data}=await sb.from('statuses').select('item_id').eq('item_id',lib.id);if(!data.length)await sb.from('items').delete().eq('id',lib.id)};
+    $('#dst').onchange=async e=>{const v=e.target.value;
+      if(!v){await sb.from('statuses').delete().match({item_id:lib.id,user_id:user.id});await clean();return again()}
+      put(v,v==='Déjà regardé'?(cur||dt()):null)};
+    const w=$('#wd');if(w)w.onchange=e=>put(mr.status,e.target.value||null);
     d.querySelectorAll('.scale button').forEach(b=>b.onclick=async()=>{const n=+b.dataset.n;
-      const{error}=await(mine&&+mine.score===n?sb.from('ratings').delete().match({item_id:lib.id,user_id:user.id}):sb.from('ratings').upsert({item_id:lib.id,user_id:user.id,email:user.email,score:n},{onConflict:'item_id,user_id'}));
+      const{error}=await(mn&&+mn.score===n?sb.from('ratings').delete().match({item_id:lib.id,user_id:user.id}):sb.from('ratings').upsert({item_id:lib.id,user_id:user.id,email:user.email,score:n},{onConflict:'item_id,user_id'}));
       if(error)return toast('Échec : '+error.message);again()});
-    $('#rm').onclick=async()=>{if(!confirm('Retirer « '+lib.title+' » de la bibliothèque ?'))return;
-      const{error}=await sb.from('items').delete().eq('id',lib.id);if(error)return toast('Échec : '+error.message);
-      d.close();await load();refresh();toast('Retiré')};
+    if(com)$('#rm').onclick=async()=>{if(!confirm('Retirer « '+lib.title+' » de la liste commune ?'))return;
+      await sb.from('statuses').delete().eq('item_id',lib.id);await clean();d.close();await load();refresh();toast('Retiré')};
   }else $('#ad').onclick=async()=>{
-    const s=$('#st').value,{error}=await sb.from('items').insert({...o,status:s,watched_at:s==='Déjà regardé'?new Date().toISOString().slice(0,10):null});
+    const s=$('#dst').value,ids=$('#dd').value==='nous'?[PID.Lu,PID.Gab]:[user.id];
+    if(ids.some(i=>!i))return toast('L’autre personne doit d’abord choisir son prénom sur le site.');
+    const{data:it,error}=await sb.from('items').insert(o).select().single();
     if(error)return toast('Échec : '+error.message);
-    await load();const n=db.find(i=>i.tmdb_id===o.tmdb_id&&i.type===o.type);toast('Ajouté à la bibliothèque');if(n)fiche(n,n);
+    const{error:e2}=await sb.from('statuses').insert(ids.map(u=>({item_id:it.id,user_id:u,status:s,watched_at:s==='Déjà regardé'?dt():null})));
+    if(e2)return toast('Échec : '+e2.message);
+    await load();toast('Ajouté');const n=db.find(i=>i.id===it.id);if(n)fiche(n,n);refresh();
   };
   if(!d.open)d.showModal();
 }
@@ -280,7 +322,7 @@ async function runSearch(){
 
 
 /* ---------- Roulette ---------- */
-let GEN=null,rl={t:'',g:''};
+let GEN=null,rl={t:'',g:'',w:'nous'};
 const ALIAS={film:{10759:28,10765:878,10768:10752},serie:{28:10759,12:10759,878:10765,14:10765,10752:10768}};
 async function genres(){
   if(GEN)return GEN;
@@ -305,18 +347,18 @@ function result(o,lib){
 }
 async function roulette(a){
   a.innerHTML=`<div class="ph"><h1>Roulette</h1><p>Laissez le hasard choisir votre prochaine soirée.</p></div>
-  <div class="tools t3"><select id="rty" aria-label="Type"><option value="">Films et séries</option><option value="film">Films</option><option value="serie">Séries</option></select><select id="rg" aria-label="Genre"><option value="">Tous les genres</option></select><button class="btn ghost" id="rgg">Genre au hasard</button></div>
+  <div class="tools t4"><select id="rw" aria-label="Liste"><option value="nous">Liste Nous</option><option value="lu">Liste Lu</option><option value="gab">Liste Gab</option></select><select id="rty" aria-label="Type"><option value="">Films et séries</option><option value="film">Films</option><option value="serie">Séries</option></select><select id="rg" aria-label="Genre"><option value="">Tous les genres</option></select><button class="btn ghost" id="rgg">Genre au hasard</button></div>
   <div class="stage"><div class="reel" id="reel">?</div><div class="meta" id="rsub">Choisissez un tirage ci-dessous</div><div id="rres" style="width:100%;display:grid;justify-items:center"></div></div>
   <div class="tools t2"><button class="btn" id="r1">Tirer dans notre liste « à voir »</button><button class="btn" id="r3">Découvrir un nouveau titre</button></div>`;
   const fill=()=>{if(GEN){$('#rg').innerHTML+=GEN.map(g=>`<option>${esc(g.name)}</option>`).join('');$('#rg').value=rl.g}};
-  $('#rty').value=rl.t;$('#rty').onchange=e=>rl.t=e.target.value;$('#rg').onchange=e=>rl.g=e.target.value;
+  $('#rw').value=rl.w;$('#rw').onchange=e=>rl.w=e.target.value;$('#rty').value=rl.t;$('#rty').onchange=e=>rl.t=e.target.value;$('#rg').onchange=e=>rl.g=e.target.value;
   genres().then(fill).catch(e=>toast(String(e)));
   const run=async fn=>{const bs=document.querySelectorAll('.stage ~ .tools .btn,#rgg');bs.forEach(b=>b.disabled=true);$('#rres').innerHTML='';
     try{await fn()}catch(e){toast(typeof e==='string'?e:'Tirage impossible, réessayez.')}bs.forEach(b=>b.disabled=false)};
   const types=()=>rl.t?[rl.t]:['film','serie'],sp=(n,f)=>new Promise(r=>spin($('#reel'),n,f,r));
   $('#rgg').onclick=()=>run(async()=>{const l=await genres(),g=pick(l);await sp(l.map(x=>x.name),g.name);rl.g=g.name;$('#rg').value=g.name;$('#rsub').textContent='Genre tiré au sort'});
   $('#r1').onclick=()=>run(async()=>{
-    const pool=db.filter(x=>x.status==='À voir'&&types().includes(x.type)&&(!rl.g||x.genres.includes(rl.g)));
+    const pool=scope(rl.w).filter(x=>x.status==='À voir'&&types().includes(x.type)&&(!rl.g||x.genres.includes(rl.g)));
     if(!pool.length){$('#reel').textContent='?';$('#rsub').textContent='Aucun titre « à voir »'+(rl.g?' dans ce genre':'')+'. Ajoutez-en depuis l’onglet Recherche.';return}
     const x=pick(pool);await sp(pool.map(p=>p.title),x.title);result(x,x)});
   $('#r3').onclick=()=>run(async()=>{
@@ -334,28 +376,30 @@ async function roulette(a){
 const row=(x,lead,val)=>`<div class="rw" data-id="${x.id}" tabindex="0" role="button"><div class="n">${lead}</div><div>${poster(x)}</div><div class="rb"><b>${esc(x.title)}</b><div class="meta">${x.type==='film'?'Film':'Série'}${[x.year,len(x)].filter(Boolean).map(v=>' · '+esc(v)).join('')}</div></div><div class="v">${val}</div></div>`;
 const bindRows=()=>document.querySelectorAll('.rw').forEach(c=>{const o=()=>{const x=db.find(y=>y.id===c.dataset.id);fiche(x,x)};c.onclick=o;c.onkeydown=e=>{if(e.key==='Enter')o()}});
 const dfr=(d,o)=>new Date(d+'T12:00').toLocaleDateString('fr-FR',o);
+const whoSel=(id,v)=>`<select id="${id}" aria-label="Qui">${[['nous','Nous deux'],['lu','Lu'],['gab','Gab']].map(([k,n])=>`<option value="${k}"${k===v?' selected':''}>${n}</option>`).join('')}</select>`;
+let hw='nous';
 function histPage(a){
-  const r=db.filter(x=>x.watched_at||x.status==='Déjà regardé').sort((x,y)=>(y.watched_at||'').localeCompare(x.watched_at||'')),g={};
+  const r=scope(hw).filter(x=>x.status==='Déjà regardé').sort((x,y)=>(y.watched_at||'').localeCompare(x.watched_at||'')),g={};
   r.forEach(x=>{const k=x.watched_at?dfr(x.watched_at,{month:'long',year:'numeric'}):'Sans date';(g[k]=g[k]||[]).push(x)});
-  a.innerHTML=`<div class="ph"><h1>Historique</h1><p>${r.length} titre${r.length>1?'s':''} vu${r.length>1?'s':''} ensemble</p></div><div class="rl">`+
-    (r.length?Object.entries(g).map(([k,l])=>`<h3 class="mh">${k}</h3>`+l.map(x=>row(x,x.watched_at?dfr(x.watched_at,{day:'numeric',month:'short'}):'–',avg(x.id)==null?'':fmt(avg(x.id)))).join('')).join(''):'<div class="empty">Rien ici pour l’instant. Passez un titre en « Déjà regardé » pour le retrouver ici.</div>')+'</div>';
-  bindRows();
+  a.innerHTML=`<div class="ph"><h1>Historique</h1><p>${r.length} titre${r.length>1?'s':''} vu${r.length>1?'s':''} ${hw==='nous'?'ensemble':'par '+PERS[hw]}</p></div><div class="tools t1">${whoSel('hw',hw)}</div><div class="rl">`+
+    (r.length?Object.entries(g).map(([k,l])=>`<h3 class="mh">${k}</h3>`+l.map(x=>row(x,x.watched_at?dfr(x.watched_at,{day:'numeric',month:'short'}):'–',sc(x,hw)==null?'':fmt(sc(x,hw)))).join('')).join(''):'<div class="empty">Rien ici pour l’instant. Passez un titre en « Déjà regardé » pour le retrouver ici.</div>')+'</div>';
+  $('#hw').onchange=e=>{hw=e.target.value;histPage(a)};bindRows();
 }
-let rk={s:'avg',o:'desc',t:''};
-const mineOf=x=>{const r=rs(x.id).find(r=>r.user_id===user.id);return r?+r.score:null};
-const SORTS={avg:['Note moyenne',x=>avg(x.id),v=>fmt(v)+'/10'],mine:['Ma note',mineOf,v=>fmt(v)+'/10'],
+let rk={w:'nous',s:'note',o:'desc',t:''};
+const SORTS={note:['Note',x=>sc(x,rk.w),v=>fmt(v)+'/10'],
   len:['Durée (films)',x=>x.type==='film'?x.length:null,v=>Math.floor(v/60)+'h'+String(v%60).padStart(2,'0')],
   year:['Année de sortie',x=>x.year,v=>v],add:['Date d’ajout',x=>x.created_at,v=>new Date(v).toLocaleDateString('fr-FR')],title:['Titre (A–Z)',x=>x.title,()=>'']};
 function rankPage(a){
-  const[,key,show]=SORTS[rk.s];
-  const all=db.filter(x=>!rk.t||x.type===rk.t).map(x=>({x,v:key(x)})),it=all.filter(e=>e.v!=null);
+  const[,key,show]=SORTS[rk.s],base=rk.w==='nous'?db:scope(rk.w);
+  const all=base.filter(x=>!rk.t||x.type===rk.t).map(x=>({x,v:key(x)})),it=all.filter(e=>e.v!=null);
   it.sort((p,q)=>{const c=typeof p.v==='string'?p.v.localeCompare(q.v,'fr'):p.v-q.v;return rk.o==='asc'?c:-c});
   a.innerHTML=`<div class="ph"><h1>Classement</h1><p>${it.length} titre${it.length>1?'s':''} classé${it.length>1?'s':''}${all.length>it.length?` · ${all.length-it.length} sans valeur pour ce critère`:''}</p></div>
-  <div class="tools t3"><select id="ks" aria-label="Trier par">${Object.entries(SORTS).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join('')}</select>
+  <div class="tools t4">${whoSel('kw',rk.w)}<select id="ks" aria-label="Trier par">${Object.entries(SORTS).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join('')}</select>
   <select id="ko" aria-label="Ordre"><option value="desc">Décroissant</option><option value="asc">Croissant</option></select>
   <select id="kt" aria-label="Type"><option value="">Films et séries</option><option value="film">Films</option><option value="serie">Séries</option></select></div>
   <div class="rl">${it.length?it.map((e,i)=>row(e.x,i+1,show(e.v))).join(''):'<div class="empty">Rien à classer pour l’instant.</div>'}</div>`;
   $('#ks').value=rk.s;$('#ko').value=rk.o;$('#kt').value=rk.t;
+  $('#kw').onchange=e=>{rk.w=e.target.value;rankPage(a)};
   $('#ks').onchange=e=>{rk.s=e.target.value;rk.o=rk.s==='title'?'asc':'desc';rankPage(a)};
   $('#ko').onchange=e=>{rk.o=e.target.value;rankPage(a)};$('#kt').onchange=e=>{rk.t=e.target.value;rankPage(a)};
   bindRows();
@@ -368,7 +412,7 @@ function login(){
     if(error)return toast('Connexion refusée : e-mail ou mot de passe incorrect');location.reload()};
 }
 function settings(a){
-  a.innerHTML=`<div class="ph"><h1>Réglages</h1><p>Connecté en tant que <b>${esc(user.email)}</b></p></div>
+  a.innerHTML=`<div class="ph"><h1>Réglages</h1><p>Connecté en tant que <b>${esc(me)}</b> (${esc(user.email)})</p></div>
   <div class="acts" style="gap:10px;flex-wrap:wrap"><button class="btn" id="ex">Exporter en JSON</button><button class="btn del" id="lo">Se déconnecter</button></div>`;
   $('#ex').onclick=()=>{const l=document.createElement('a');l.href=URL.createObjectURL(new Blob([JSON.stringify({items:db,ratings:rat},null,1)],{type:'application/json'}));l.download='cinetheque.json';l.click()};
   $('#lo').onclick=async()=>{await sb.auth.signOut();location.reload()};
