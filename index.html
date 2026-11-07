@@ -202,6 +202,8 @@ dialog{height:100dvh;max-height:100dvh;margin:0;overscroll-behavior:contain}
 .pill span{white-space:nowrap}.rhead>div:first-child{min-width:0}.rhead small{display:block;line-height:1.3}
 .pill{flex:none}
 @media(max-width:760px){.pill select{max-width:120px}.rail{margin:0 -14px;padding:0 14px 10px}.rail .pc{flex-basis:124px}}
+.ract{display:flex;align-items:center;gap:8px;min-width:0;max-width:64%}.ract .pill{max-width:none}
+@media(hover:hover) and (pointer:fine){.rail{scrollbar-width:thin;scrollbar-color:var(--line) transparent}.rail::-webkit-scrollbar{display:block;height:8px}.rail::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -217,13 +219,13 @@ dialog{height:100dvh;max-height:100dvh;margin:0;overscroll-behavior:contain}
 const SB_URL='https://ghzyyxyswhrrmgmbbqfj.supabase.co',SB_KEY='sb_publishable_hK_ZE_hGjwPj9Ob-8sAQEw_j94FOuJ_';
 const STATUS={'À voir':'#8ec5ff','Déjà regardé':'#8fe0b0','En cours':'#ffc98b','En pause':'#c4b0ff','Abandonné':'#ff9a9a'};
 const IMG='https://image.tmdb.org/t/p/w500';
-const P={film:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/>',tv:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 2l4 5 4-5"/>',search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-5-5"/>',wheel:'<circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M6 6l12 12M18 6L6 18"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',cup:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/>',user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',check:'<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12l3 3 5-6"/>',edit:'<path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/>',dots:'<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',refresh:'<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/>',heart:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2 4 4 0 0 1 7 2c0 5.5-7 10-7 10z"/>',gear:'<circle cx="12" cy="12" r="3"/><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>'};
+const P={film:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/>',tv:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 2l4 5 4-5"/>',search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-5-5"/>',wheel:'<circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M6 6l12 12M18 6L6 18"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',cup:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/>',user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',check:'<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12l3 3 5-6"/>',edit:'<path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/>',dots:'<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',refresh:'<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/>',grid:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',rail:'<rect x="2" y="6" width="8" height="12" rx="1"/><rect x="12" y="6" width="8" height="12" rx="1"/><path d="M22 9v6"/>',heart:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2 4 4 0 0 1 7 2c0 5.5-7 10-7 10z"/>',gear:'<circle cx="12" cy="12" r="3"/><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>'};
 const ic=k=>`<svg class="i" viewBox="0 0 24 24">${P[k]}</svg>`;
 const NAV=[['recherche','Recherche','search'],['nous','Nous','heart'],['lu','Lu','user'],['gab','Gab','user'],['roulette','Roulette','wheel'],['historique','Historique','clock'],['classement','Classement','cup'],['parametres','Réglages','gear']];
 const PERS={lu:'Lu',gab:'Gab'},LISTS=['nous','lu','gab'];
 let db=[],rat=[],sts=[],prof=[],route='nous',f={q:'',n:'',st:'',g:'',s:'add'},ready=false,user=null,me='',PID={};
 const $=s=>document.querySelector(s);
-let prefs={theme:'prune',accent:'#f58fa3',size:'100%',dense:false,home:'nous',sort:'add',desc:true,anim:true,country:'FR'};
+let prefs={theme:'prune',accent:'#f58fa3',size:'100%',dense:false,home:'nous',sort:'add',desc:true,anim:true,country:'FR',recoView:'auto'};
 try{Object.assign(prefs,JSON.parse(localStorage.cine||'{}'))}catch(e){}
 function applyPrefs(){const h=document.documentElement;h.dataset.theme=prefs.theme;h.style.setProperty('--ac',prefs.accent);h.style.fontSize=prefs.size;h.classList.toggle('dense',!!prefs.dense);h.classList.toggle('nodesc',!prefs.desc)}
 const setPref=(k,v)=>{prefs[k]=v;localStorage.cine=JSON.stringify(prefs);applyPrefs()};
@@ -416,6 +418,7 @@ function fiche(o,lib){
 }
 
 let recoSeed='',recoN=0;
+const gridMode=()=>prefs.recoView==='grid'||(prefs.recoView==='auto'&&matchMedia('(hover:hover) and (pointer:fine)').matches);
 const pcHtml=r=>{const title=r.title||r.name,y=(r.release_date||r.first_air_date||'').slice(0,4);return `<button class="pc" data-id="${r.id}" data-t="${r._t}">${poster({title},'https://image.tmdb.org/t/p/w342'+r.poster_path)}<b>${esc(title)}</b><span class="meta">${y||'?'} · ${r._t==='film'?'Film':'Série'}${r._from?' · proche de '+esc(r._from):''}</span></button>`};
 const pcBind=box=>box.querySelectorAll('.pc').forEach(b=>b.onclick=async()=>{try{const o=await details(b.dataset.id,b.dataset.t);fiche(o,db.find(i=>i.tmdb_id===o.tmdb_id&&i.type===o.type))}catch(e){toast(String(e))}});
 function reco(){
@@ -424,7 +427,7 @@ function reco(){
   const opts=[...liked],si=db.find(x=>x.id===sel&&x.tmdb_id);if(si&&!opts.includes(si))opts.unshift(si);
   const head='<div class="rhead"><div><h3>Pour vous</h3><small>Proche de vos coups de cœur</small></div>';
   if(!opts.length){box.innerHTML=head+'</div><div class="empty">Notez quelques titres 7/10 ou plus (en moyenne) pour recevoir des recommandations.</div>';return}
-  box.innerHTML=head+`<label class="pill"><span>Basé sur</span><select id="rs" aria-label="Basé sur"><option value="mix">Mes coups de cœur</option>${opts.map(x=>`<option value="${x.id}">${esc(x.title)}${avg(x.id)!=null?' · '+fmt(avg(x.id)):''}</option>`).join('')}</select></label></div><div class="rail" id="rg2"><span class="meta">Recherche…</span></div>`;
+  box.innerHTML=head+`<div class="ract"><button type="button" class="ibtn sm" id="vt" aria-label="Changer l’affichage" title="Changer l’affichage">${ic(gridMode()?'rail':'grid')}</button><label class="pill"><span>Basé sur</span><select id="rs" aria-label="Basé sur"><option value="mix">Mes coups de cœur</option>${opts.map(x=>`<option value="${x.id}">${esc(x.title)}${avg(x.id)!=null?' · '+fmt(avg(x.id)):''}</option>`).join('')}</select></label></div></div><div class="${gridMode()?'pgrid':'rail'}" id="rg2"><span class="meta">Recherche…</span></div>`;
   const run=async()=>{
     const v=$('#rs').value,n=++recoN,seeds=v==='mix'?liked.slice(0,6).sort(()=>Math.random()-.5).slice(0,3):[db.find(x=>x.id===v)];
     try{
@@ -437,7 +440,8 @@ function reco(){
       pcBind($('#rg2'));
     }catch(e){toast(typeof e==='string'?e:'Recommandations indisponibles.')}
   };
-  $('#rs').value=opts.some(x=>x.id===sel)?sel:'mix';$('#rs').onchange=run;run();
+  $('#rs').value=opts.some(x=>x.id===sel)?sel:'mix';$('#rs').onchange=run;
+  $('#vt').onclick=()=>{setPref('recoView',gridMode()?'rail':'grid');$('#rg2').className=gridMode()?'pgrid':'rail';$('#vt').innerHTML=ic(gridMode()?'rail':'grid')};run();
 }
 let sT;
 function searchPage(a){
@@ -590,6 +594,7 @@ function settings(a){
   <h3 class="mh">Utilisation</h3><div class="sc2">
   ${SR('Page de démarrage','Onglet ouvert à l’arrivée sur le site',SEL('home',[['nous','Nous'],['lu','Lu'],['gab','Gab'],['recherche','Recherche'],['roulette','Roulette']]))}
   ${SR('Tri par défaut','Ordre initial des listes',SEL('sort',Object.entries(S).map(([k,v])=>[k,v[0]])))}
+  ${SR('Recommandations','Disposition sur la page Recherche',SEG('recoView',[['auto','Auto'],['grid','Grille'],['rail','Bande']]))}
   ${SR('Animation de la roulette','Faire défiler les titres avant le résultat',YN('anim'))}
   ${SR('Pays des plateformes','Où chercher le streaming, pour les prochains ajouts',SEL('country',[['FR','France'],['BE','Belgique'],['CH','Suisse'],['CA','Canada'],['LU','Luxembourg']]))}</div>
   <h3 class="mh">Données et compte</h3><div class="sc2">
