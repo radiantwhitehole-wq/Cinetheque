@@ -516,7 +516,7 @@ const SORTS={note:['Note',x=>sc(x,rk.w),v=>fmt(v)+'/10'],
   len:['Durée (films)',x=>x.type==='film'?x.length:null,v=>Math.floor(v/60)+'h'+String(v%60).padStart(2,'0')],
   year:['Année de sortie',x=>x.year,v=>v],add:['Date d’ajout',x=>x.created_at,v=>new Date(v).toLocaleDateString('fr-FR')],title:['Titre (A–Z)',x=>x.title,()=>'']};
 function rankPage(a){
-  const[,key,show]=SORTS[rk.s],base=rk.w==='nous'?db:scope(rk.w);
+  const[,key,show]=SORTS[rk.s],base=rk.w==='nous'?scope('nous').filter(x=>x.status==='Déjà regardé'):scope(rk.w);
   const all=base.filter(x=>!rk.t||x.type===rk.t).map(x=>({x,v:key(x)})),it=all.filter(e=>e.v!=null);
   it.sort((p,q)=>{const c=typeof p.v==='string'?p.v.localeCompare(q.v,'fr'):p.v-q.v;return rk.o==='asc'?c:-c});
   a.innerHTML=`<div class="ph"><h1>Classement</h1><p>${it.length} titre${it.length>1?'s':''} classé${it.length>1?'s':''}${all.length>it.length?` · ${all.length-it.length} sans valeur pour ce critère`:''}</p></div>
