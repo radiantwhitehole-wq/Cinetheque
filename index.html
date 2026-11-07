@@ -183,6 +183,13 @@ dialog{height:100dvh;max-height:100dvh}
 .ibtn.left{right:auto;left:0}
 @media(min-width:761px){.ibtn.left{display:none}}
 @media(max-width:760px){nav{transform:translateZ(0)}main{min-height:calc(100dvh - 58px - env(safe-area-inset-top))}}
+.fclose{display:none}.fh:focus{outline:none}
+@media(max-width:600px){
+dialog{height:100dvh;max-height:100dvh;margin:0;overscroll-behavior:contain}
+.x{position:fixed;top:calc(10px + env(safe-area-inset-top));right:12px;width:44px;height:44px;font-size:1.5rem;z-index:5;background:var(--s2);box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.fi{padding:calc(20px + env(safe-area-inset-top)) 16px calc(30px + env(safe-area-inset-bottom))}
+.fclose{display:block;width:100%}
+}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -346,6 +353,7 @@ async function bulk(act,v){
   sel=new Set();await load();refresh();toast('C’est fait');
 }
 function fiche(o,lib){
+  const keep=$('#dlg').scrollTop;
   const x=lib||o,d=$('#dlg'),rr=lib?rs(lib.id):[],mn=rr.find(r=>r.user_id===user.id),others=rr.filter(r=>r.user_id!==user.id);
   const oth=me==='Lu'?'Gab':'Lu',com=!!lib&&common(lib),mr=lib&&stRow(lib,me),or=lib&&stRow(lib,oth);
   const nm=u=>Object.keys(PID).find(k=>PID[k]===u)||'?',dt=()=>new Date().toISOString().slice(0,10);
@@ -353,7 +361,7 @@ function fiche(o,lib){
   const pg=lib&&x.type==='serie'&&mr&&['En cours','En pause','Abandonné'].includes(mr.status)?`<div class="row"><label>Avancement</label><span class="prog"><input id="sn" type="number" min="1" placeholder="Saison${x.length?' /'+x.length:''}" value="${mr.season||''}"><input id="ep" type="number" min="1" placeholder="Épisode" value="${mr.episode||''}"></span></div>`:'';
   const dr=r=>`<div class="row"><label for="wd">Vu le</label><input type="date" id="wd" value="${(r&&r.watched_at)||''}"></div>`;
   d.innerHTML=`<div class="fi"><button class="x" id="cl" aria-label="Fermer">×</button>
-  <div class="fh">${poster(x)}<div class="fm"><h2>${esc(x.title)}</h2><div class="meta">${nature(x)} · ${metaLine(x)}</div><div class="gs">${x.genres.map(g=>`<span class="g">${esc(g)}</span>`).join('')}</div>
+  <div class="fh" tabindex="-1" autofocus>${poster(x)}<div class="fm"><h2>${esc(x.title)}</h2><div class="meta">${nature(x)} · ${metaLine(x)}</div><div class="gs">${x.genres.map(g=>`<span class="g">${esc(g)}</span>`).join('')}</div>
   ${lib?`<div class="avgbig"><b>${fmt(avg(lib.id))}</b><small>/10 · moyenne à deux</small></div>`:''}</div></div>
   <p class="ov">${esc(x.description||'Pas de description disponible.')}</p>
   <div class="facts"><div><small>${x.type==='film'?'Réalisateur':'Créateur'}</small><b>${esc(x.creator||'–')}</b></div><div><small>Disponible sur</small><b>${esc(x.platform||'–')}</b></div></div>
@@ -364,8 +372,8 @@ function fiche(o,lib){
   <div class="scale">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button type="button" data-n="${n}" class="${mn&&+mn.score===n?'on':''}">${n}</button>`).join('')}</div></div>
   ${com?'<div class="acts"><button class="btn del" id="rm">Retirer de la liste commune</button></div>':''}`
   :`<div class="box"><div class="row"><label for="dd">Ajouter à</label><select id="dd"><option value="nous">Notre liste (Nous)</option><option value="me">Ma liste (${me})</option></select></div>
-  <div class="row"><label for="dst">Statut</label><select id="dst">${opts('À voir')}</select></div><button class="btn" id="ad">Ajouter</button></div>`}</div>`;
-  $('#cl').onclick=()=>d.close();d.onclick=e=>{if(e.target===d)d.close()};
+  <div class="row"><label for="dst">Statut</label><select id="dst">${opts('À voir')}</select></div><button class="btn" id="ad">Ajouter</button></div>`}<button class="btn ghost fclose" id="cl2">Fermer</button></div>`;
+  $('#cl').onclick=$('#cl2').onclick=()=>d.close();d.onclick=e=>{if(e.target===d)d.close()};
   const again=async()=>{await load();const n=lib&&db.find(i=>i.id===lib.id);if(n)fiche(n,n);else d.close();refresh()};
   if(lib){
     const names=com?['Lu','Gab']:[me],cur=mr&&mr.watched_at;
@@ -391,6 +399,7 @@ function fiche(o,lib){
     await load();toast('Ajouté');const n=db.find(i=>i.id===it.id);if(n)fiche(n,n);refresh();
   };
   if(!d.open)d.showModal();
+  d.scrollTop=keep;
 }
 
 let sT;
