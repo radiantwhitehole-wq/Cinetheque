@@ -182,6 +182,7 @@ dialog{height:100dvh;max-height:100dvh}
 }
 .ibtn.left{right:auto;left:0}
 @media(min-width:761px){.ibtn.left{display:none}}
+@media(max-width:760px){nav{transform:translateZ(0)}main{min-height:calc(100dvh - 58px - env(safe-area-inset-top))}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -263,6 +264,7 @@ function whoAmI(){
 }
 function go(){
   if(!ready)return login();
+  scrollTo(0,0);
   route=(location.hash||'#'+prefs.home).slice(1);f={q:'',n:'',st:'',g:'',s:prefs.sort};sel=null;
   document.querySelectorAll('nav a,.sh-box a').forEach(a=>a.classList.toggle('on',a.hash==='#'+route));$('#more').classList.toggle('on',NAV.slice(4).some(n=>n[0]===route));
   const a=$('#app');
@@ -397,7 +399,7 @@ function searchPage(a){
   <div class="tools s"><input id="sq" type="search" placeholder="Titre d’un film ou d’une série" aria-label="Titre" autocomplete="off"><select id="sty" aria-label="Type"><option value="">Films et séries</option><option value="film">Films</option><option value="serie">Séries</option></select></div>
   <div class="pgrid" id="res"><div class="empty">Tapez un titre pour lancer la recherche.</div></div>`;
   const run=()=>{clearTimeout(sT);sT=setTimeout(runSearch,350)};
-  $('#sq').oninput=run;$('#sty').onchange=runSearch;$('#sq').focus();
+  $('#sq').oninput=run;$('#sty').onchange=runSearch;if(matchMedia('(hover:hover)').matches)$('#sq').focus();
 }
 async function runSearch(){
   const q=$('#sq').value.trim(),ty=$('#sty').value,n=runSearch.n=(runSearch.n||0)+1,box=$('#res');
