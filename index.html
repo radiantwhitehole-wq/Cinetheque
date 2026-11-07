@@ -180,6 +180,8 @@ footer{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
 .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
 dialog{height:100dvh;max-height:100dvh}
 }
+.ibtn.left{right:auto;left:0}
+@media(min-width:761px){.ibtn.left{display:none}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -195,7 +197,7 @@ dialog{height:100dvh;max-height:100dvh}
 const SB_URL='https://ghzyyxyswhrrmgmbbqfj.supabase.co',SB_KEY='sb_publishable_hK_ZE_hGjwPj9Ob-8sAQEw_j94FOuJ_';
 const STATUS={'À voir':'#8ec5ff','Déjà regardé':'#8fe0b0','En cours':'#ffc98b','En pause':'#c4b0ff','Abandonné':'#ff9a9a'};
 const IMG='https://image.tmdb.org/t/p/w500';
-const P={film:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/>',tv:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 2l4 5 4-5"/>',search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-5-5"/>',wheel:'<circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M6 6l12 12M18 6L6 18"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',cup:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/>',user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',check:'<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12l3 3 5-6"/>',edit:'<path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/>',dots:'<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',heart:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2 4 4 0 0 1 7 2c0 5.5-7 10-7 10z"/>',gear:'<circle cx="12" cy="12" r="3"/><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>'};
+const P={film:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/>',tv:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 2l4 5 4-5"/>',search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-5-5"/>',wheel:'<circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M6 6l12 12M18 6L6 18"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',cup:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/>',user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',check:'<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12l3 3 5-6"/>',edit:'<path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/>',dots:'<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',refresh:'<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/>',heart:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2 4 4 0 0 1 7 2c0 5.5-7 10-7 10z"/>',gear:'<circle cx="12" cy="12" r="3"/><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>'};
 const ic=k=>`<svg class="i" viewBox="0 0 24 24">${P[k]}</svg>`;
 const NAV=[['recherche','Recherche','search'],['nous','Nous','heart'],['lu','Lu','user'],['gab','Gab','user'],['roulette','Roulette','wheel'],['historique','Historique','clock'],['classement','Classement','cup'],['parametres','Réglages','gear']];
 const PERS={lu:'Lu',gab:'Gab'},LISTS=['nous','lu','gab'];
@@ -551,6 +553,8 @@ function settings(a){
   $('#rs').onclick=()=>{localStorage.removeItem('cine');location.reload()};
   $('#lo').onclick=async()=>{await sb.auth.signOut();location.reload()};
 }
+new MutationObserver(()=>{const p=document.querySelector('#app .ph');if(p&&!p.querySelector('#rf'))p.insertAdjacentHTML('afterbegin',`<button class="ibtn left" id="rf" aria-label="Recharger la page" title="Recharger">${ic('refresh')}</button>`)}).observe($('#app'),{childList:true});
+document.addEventListener('click',e=>{if(e.target.closest('#rf'))location.reload()});
 addEventListener('hashchange',go);
 boot();
 </script>
