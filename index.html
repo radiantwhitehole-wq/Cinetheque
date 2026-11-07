@@ -370,7 +370,7 @@ function fiche(o,lib){
   <div class="box"><h4>Notes</h4>${others.map(r=>`<div class="row"><span>${esc(nm(r.user_id))}</span><b class="sc">${fmt(r.score)}</b></div>`).join('')}
   <div class="row"><span>Ta note</span><b class="sc">${mn?fmt(mn.score):'–'}</b></div>
   <div class="scale">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button type="button" data-n="${n}" class="${mn&&+mn.score===n?'on':''}">${n}</button>`).join('')}</div></div>
-  ${com?'<div class="acts"><button class="btn del" id="rm">Retirer de la liste commune</button></div>':''}`
+  <div class="acts" style="gap:10px;flex-wrap:wrap">${x.tmdb_id?'<button class="btn ghost" id="sim">Titres similaires</button>':''}${com?'<button class="btn del" id="rm">Retirer de la liste commune</button>':''}</div>`
   :`<div class="box"><div class="row"><label for="dd">Ajouter à</label><select id="dd"><option value="nous">Notre liste (Nous)</option><option value="me">Ma liste (${me})</option></select></div>
   <div class="row"><label for="dst">Statut</label><select id="dst">${opts('À voir')}</select></div><button class="btn" id="ad">Ajouter</button></div>`}<button class="btn ghost fclose" id="cl2">Fermer</button></div>`;
   $('#cl').onclick=$('#cl2').onclick=()=>d.close();d.onclick=e=>{if(e.target===d)d.close()};
@@ -387,6 +387,7 @@ function fiche(o,lib){
     d.querySelectorAll('.scale button').forEach(b=>b.onclick=async()=>{const n=+b.dataset.n;
       const{error}=await(mn&&+mn.score===n?sb.from('ratings').delete().match({item_id:lib.id,user_id:user.id}):sb.from('ratings').upsert({item_id:lib.id,user_id:user.id,email:user.email,score:n},{onConflict:'item_id,user_id'}));
       if(error)return toast('Échec : '+error.message);again()});
+    if($('#sim'))$('#sim').onclick=()=>{recoSeed=lib.id;d.close();location.hash==='#recherche'?go():location.hash='#recherche'};
     if(com)$('#rm').onclick=async()=>{if(!confirm('Retirer « '+lib.title+' » de la liste commune ?'))return;
       await sb.from('statuses').delete().eq('item_id',lib.id);await clean();d.close();await load();refresh();toast('Retiré')};
   }else $('#ad').onclick=async()=>{
@@ -402,17 +403,42 @@ function fiche(o,lib){
   d.scrollTop=keep;
 }
 
+let recoSeed='',recoN=0;
+const pcHtml=r=>{const title=r.title||r.name,y=(r.release_date||r.first_air_date||'').slice(0,4);return `<button class="pc" data-id="${r.id}" data-t="${r._t}">${poster({title},'https://image.tmdb.org/t/p/w342'+r.poster_path)}<b>${esc(title)}</b><span class="meta">${y||'?'} · ${r._t==='film'?'Film':'Série'}${r._from?' · proche de '+esc(r._from):''}</span></button>`};
+const pcBind=box=>box.querySelectorAll('.pc').forEach(b=>b.onclick=async()=>{try{const o=await details(b.dataset.id,b.dataset.t);fiche(o,db.find(i=>i.tmdb_id===o.tmdb_id&&i.type===o.type))}catch(e){toast(String(e))}});
+function reco(){
+  const box=$('#reco');if(!box)return;
+  const liked=db.filter(x=>x.tmdb_id&&avg(x.id)!=null&&avg(x.id)>=7).sort((a,b)=>avg(b.id)-avg(a.id)),sel=recoSeed||'mix';recoSeed='';
+  const opts=[...liked],si=db.find(x=>x.id===sel&&x.tmdb_id);if(si&&!opts.includes(si))opts.unshift(si);
+  const head='<h3 class="mh" style="text-align:center">Recommandations</h3>';
+  if(!opts.length){box.innerHTML=head+'<div class="empty">Notez quelques titres 7/10 ou plus (en moyenne) pour recevoir des recommandations.</div>';return}
+  box.innerHTML=head+`<div class="tools t1"><select id="rs" aria-label="Basé sur"><option value="mix">Un mélange de vos coups de cœur</option>${opts.map(x=>`<option value="${x.id}">Comme ${esc(x.title)}${avg(x.id)!=null?' ('+fmt(avg(x.id))+'/10)':''}</option>`).join('')}</select></div><div class="pgrid" id="rg2"><div class="empty">Recherche…</div></div>`;
+  const run=async()=>{
+    const v=$('#rs').value,n=++recoN,seeds=v==='mix'?liked.slice(0,6).sort(()=>Math.random()-.5).slice(0,3):[db.find(x=>x.id===v)];
+    try{
+      const lists=await Promise.all(seeds.map(x=>tm('/'+(x.type==='film'?'movie':'tv')+'/'+x.tmdb_id+'/recommendations').then(r=>r.results.map(y=>({...y,_t:x.type,_from:x.title})))));
+      if(n!==recoN||!$('#rg2'))return;
+      const seen=new Map();
+      lists.flat().forEach(y=>{if(!y.poster_path||db.some(i=>i.tmdb_id===y.id&&i.type===y._t))return;const k=y._t+y.id,e=seen.get(k);if(e)e._n++;else seen.set(k,{...y,_n:1})});
+      const r=[...seen.values()].sort((a,b)=>b._n-a._n||b.popularity-a.popularity).slice(0,18);
+      $('#rg2').innerHTML=r.length?r.map(pcHtml).join(''):'<div class="empty">Aucune nouvelle recommandation pour ce choix.</div>';
+      pcBind($('#rg2'));
+    }catch(e){toast(typeof e==='string'?e:'Recommandations indisponibles.')}
+  };
+  $('#rs').value=opts.some(x=>x.id===sel)?sel:'mix';$('#rs').onchange=run;run();
+}
 let sT;
 function searchPage(a){
   a.innerHTML=`<div class="ph"><h1>Recherche</h1><p>Trouvez un film ou une série, ouvrez sa fiche, puis ajoutez-le à votre bibliothèque.</p></div>
   <div class="tools s"><input id="sq" type="search" placeholder="Titre d’un film ou d’une série" aria-label="Titre" autocomplete="off"><select id="sty" aria-label="Type"><option value="">Films et séries</option><option value="film">Films</option><option value="serie">Séries</option></select></div>
-  <div class="pgrid" id="res"><div class="empty">Tapez un titre pour lancer la recherche.</div></div>`;
+  <div class="pgrid" id="res"></div><div id="reco"></div>`;
   const run=()=>{clearTimeout(sT);sT=setTimeout(runSearch,350)};
-  $('#sq').oninput=run;$('#sty').onchange=runSearch;if(matchMedia('(hover:hover)').matches)$('#sq').focus();
+  $('#sq').oninput=run;$('#sty').onchange=runSearch;reco();if(matchMedia('(hover:hover)').matches)$('#sq').focus();
 }
 async function runSearch(){
   const q=$('#sq').value.trim(),ty=$('#sty').value,n=runSearch.n=(runSearch.n||0)+1,box=$('#res');
-  if(q.length<2){box.innerHTML='<div class="empty">Tapez un titre pour lancer la recherche.</div>';return}
+  if(q.length<2){box.innerHTML='';$('#reco').hidden=false;return}
+  $('#reco').hidden=true;
   try{
     const calls=[];
     if(ty!=='serie')calls.push(tm('/search/movie',{query:q}).then(r=>r.results.map(x=>({...x,_t:'film'}))));
